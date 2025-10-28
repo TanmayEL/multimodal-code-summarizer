@@ -7,9 +7,9 @@ Implementing multimodal transformer architecture for code review summarization
 
 ### Day 1 (Today)
 - [x] Set up feature branch
-- [ ] Create base model architecture
+- [x] Create base model architecture
+- [x] Add basic model tests
 - [ ] Implement Vision Transformer component
-- [ ] Add basic model configuration
 
 ### Day 2
 - [ ] Implement CodeBERT integration

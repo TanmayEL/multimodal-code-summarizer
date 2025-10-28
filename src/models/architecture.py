@@ -12,6 +12,7 @@ import torch.nn as nn
 from typing import Dict, Optional, Tuple
 
 from ..config import config
+from .vision_transformer import VisionTransformer
 
 
 class MultimodalCodeReviewModel(nn.Module):
@@ -44,8 +45,15 @@ class MultimodalCodeReviewModel(nn.Module):
         self.max_seq_len = max_seq_len
         self.img_size = img_size
         
-        # TODO: Initialize components
-        # self.vision_transformer = VisionTransformer(...)
+        # Initialize Vision Transformer for diff images
+        self.vision_transformer = VisionTransformer(
+            img_size=img_size,
+            embed_dim=hidden_dim,
+            num_heads=num_heads,
+            num_layers=num_layers
+        )
+        
+        # TODO: Initialize other components
         # self.code_bert = CodeBERT(...)
         # self.fusion_layer = FusionLayer(...)
         # self.summary_decoder = SummaryDecoder(...)
@@ -70,8 +78,19 @@ class MultimodalCodeReviewModel(nn.Module):
         Returns:
             Summary logits [B, vocab_size]
         """
-        # TODO: Implement actual forward pass
-        # For now, just return placeholder
+        # Process diff images through Vision Transformer
+        img_features = self.vision_transformer(diff_images)  # [B, hidden_dim]
+        
+        # TODO: Process diff text and context
+        # text_features = self.code_bert(diff_text, context)
+        
+        # TODO: Fuse modalities
+        # fused_features = self.fusion_layer(img_features, text_features)
+        
+        # TODO: Generate summary
+        # summary_logits = self.summary_decoder(fused_features)
+        
+        # For now, just use image features as placeholder
         batch_size = diff_images.size(0)
         return torch.randn(batch_size, self.vocab_size)
     
