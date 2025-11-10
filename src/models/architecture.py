@@ -1,10 +1,10 @@
 """
 Base model architecture for multimodal code review summarization
 
-This is where we'll define our main model class that combines:
+This is where i ll define the main model class that combines:
 - Vision Transformer for diff images
 - CodeBERT for code text
-- Fusion layer to combine modalities
+- Fusion layer to combine themodalities
 """
 
 import torch
@@ -13,6 +13,8 @@ from typing import Dict, Optional, Tuple
 
 from ..config import config
 from .vision_transformer import VisionTransformer
+from .code_bert import CodeBERT
+from .fusion import MultimodalFusionLayer
 
 
 class MultimodalCodeReviewModel(nn.Module):
@@ -31,7 +33,7 @@ class MultimodalCodeReviewModel(nn.Module):
         vocab_size: int = 10000,  # TODO: get actual vocab size
         hidden_dim: int = 768,    # standard transformer size
         num_heads: int = 12,      # attention heads
-        num_layers: int = 6,     # transformer layers
+        num_layers: int = 6,     # transformerlayers
         max_seq_len: int = 512,   # max sequence length
         img_size: Tuple[int, int] = (224, 224)  # image size
     ):
@@ -53,13 +55,29 @@ class MultimodalCodeReviewModel(nn.Module):
             num_layers=num_layers
         )
         
-        # TODO: Initialize other components
-        # self.code_bert = CodeBERT(...)
-        # self.fusion_layer = FusionLayer(...)
-        # self.summary_decoder = SummaryDecoder(...)
+        # Initialize CodeBERT for text processing
+        self.code_bert = CodeBERT(
+            vocab_size=vocab_size,
+            embed_dim=hidden_dim,
+            num_heads=num_heads,
+            num_layers=num_layers,
+            max_seq_len=max_seq_len
+        )
         
-        # Placeholder for now
-        self.placeholder = nn.Linear(hidden_dim, hidden_dim)
+        # Initialize fusion layer
+        self.fusion_layer = MultimodalFusionLayer(
+            embed_dim=hidden_dim,
+            num_heads=num_heads
+        )
+        
+        # Summary decoder (simple linear layer for now)
+        self.summary_decoder = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.LayerNorm(hidden_dim),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, vocab_size)
+        )
     
     def forward(
         self,
@@ -67,32 +85,19 @@ class MultimodalCodeReviewModel(nn.Module):
         diff_text: torch.Tensor,
         context: torch.Tensor
     ) -> torch.Tensor:
-        """
-        Forward pass through the model
         
-        Args:
-            diff_images: Batch of diff images [B, C, H, W]
-            diff_text: Batch of diff text tokens [B, seq_len]
-            context: Batch of context tokens [B, seq_len]
-            
-        Returns:
-            Summary logits [B, vocab_size]
-        """
-        # Process diff images through Vision Transformer
+        #diff images through Vision Transformer
         img_features = self.vision_transformer(diff_images)  # [B, hidden_dim]
         
-        # TODO: Process diff text and context
-        # text_features = self.code_bert(diff_text, context)
+        #diff text and context through CodeBERT
+        diff_features, context_features = self.code_bert(diff_text, context)
         
-        # TODO: Fuse modalities
-        # fused_features = self.fusion_layer(img_features, text_features)
+        # combinee
+        fused_features = self.fusion_layer(img_features, diff_features, context_features)
+
+        summary_logits = self.summary_decoder(fused_features)
         
-        # TODO: Generate summary
-        # summary_logits = self.summary_decoder(fused_features)
-        
-        # For now, just use image features as placeholder
-        batch_size = diff_images.size(0)
-        return torch.randn(batch_size, self.vocab_size)
+        return summary_logits
     
     def generate_summary(
         self,
@@ -103,15 +108,17 @@ class MultimodalCodeReviewModel(nn.Module):
     ) -> str:
         """
         Generate a summary for given inputs
-        
-        Args:
-            diff_images: Single diff image [C, H, W]
-            diff_text: Single diff text [seq_len]
-            context: Single context [seq_len]
-            max_length: Maximum summary length
-            
-        Returns:
-            Generated summary string
         """
-        # TODO: Implement summary generation
+        # Add batch dimension
+        diff_images = diff_images.unsqueeze(0)  # [1, C, H, W]
+        diff_text = diff_text.unsqueeze(0)      # [1, seq_len]
+        context = context.unsqueeze(0)          # [1, seq_len]
+
+        with torch.no_grad():
+            logits = self.forward(diff_images, diff_text, context)
+            
+        # scope (could be improved with beam search)
+        predicted_tokens = torch.argmax(logits, dim=-1)  # [1, vocab_size]
+        
+        # Convert tokens to text (placeholder)
         return "Generated summary placeholder"

@@ -29,16 +29,13 @@ def test_model_forward():
     """Test model forward pass"""
     model = MultimodalCodeReviewModel()
     
-    # Create dummy inputs
     batch_size = 2
     diff_images = torch.randn(batch_size, 3, 224, 224)
     diff_text = torch.randint(0, 1000, (batch_size, 100))
     context = torch.randint(0, 1000, (batch_size, 50))
-    
-    # Forward pass
+
     output = model(diff_images, diff_text, context)
-    
-    # Check output shape
+
     assert output.shape == (batch_size, model.vocab_size)
     assert isinstance(output, torch.Tensor)
 
@@ -46,15 +43,30 @@ def test_model_forward():
 def test_model_generate_summary():
     """Test summary generation"""
     model = MultimodalCodeReviewModel()
-    
-    # Create dummy inputs
+
     diff_image = torch.randn(3, 224, 224)
     diff_text = torch.randint(0, 1000, (100,))
     context = torch.randint(0, 1000, (50,))
-    
-    # Generate summary
+
     summary = model.generate_summary(diff_image, diff_text, context)
-    
-    # Check output
+
     assert isinstance(summary, str)
     assert len(summary) > 0
+
+
+def test_model_gradients():
+    """Test that gradients flow through the model"""
+    model = MultimodalCodeReviewModel()
+
+    diff_images = torch.randn(1, 3, 224, 224, requires_grad=True)
+    diff_text = torch.randint(0, 1000, (1, 100))
+    context = torch.randint(0, 1000, (1, 50))
+
+    output = model(diff_images, diff_text, context)
+    
+    # Backward pass
+    loss = output.sum()
+    loss.backward()
+    
+    assert diff_images.grad is not None
+    assert diff_images.grad.shape == diff_images.shape
