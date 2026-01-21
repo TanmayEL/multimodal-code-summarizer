@@ -1,5 +1,3 @@
-"""Script to prepare the dataset."""
-
 import argparse
 import json
 import logging
@@ -19,21 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 def process_raw_data(raw_data_path: Path, processed_data_path: Path) -> Tuple[List[Dict], List[Dict]]:
-    """Process raw data and split into train and validation sets.
-    
-    Args:
-        raw_data_path: Path to raw data
-        processed_data_path: Path to save processed data
-        
-    Returns:
-        Train and validation data lists
-    """
-    # Start processors
+    #Process raw data and split into train and validation sets.
+    #start processors
     code_processor = CodeProcessor()
     image_processor = DiffImageProcessor()
     context_processor = ContextProcessor()
     
-    # Load and process data
     data = []
     raw_files = list(raw_data_path.glob("*.json"))
     
@@ -45,7 +34,7 @@ def process_raw_data(raw_data_path: Path, processed_data_path: Path) -> Tuple[Li
             try:
                 processed_diff = code_processor.process_diff(item["diff"])
                 
-                # Generate diff imagess
+                #generate diff imagess
                 diff_image = image_processor.diff_to_image(processed_diff)
                 
                 context = context_processor.process_context(
@@ -67,7 +56,7 @@ def process_raw_data(raw_data_path: Path, processed_data_path: Path) -> Tuple[Li
                 logger.warning(f"Error processing item: {e}")
                 continue
     
-    # Split data
+    #split data
     train_data, val_data = train_test_split(
         data,
         test_size=config.data.train_test_split,
@@ -95,16 +84,13 @@ def main():
     
     args = parser.parse_args()
     
-    # Create directories
     raw_path = Path(args.raw_dir)
     processed_path = Path(args.processed_dir)
     processed_path.mkdir(parents=True, exist_ok=True)
-    
-    # Process data
+
     logger.info("Processing data...")
     train_data, val_data = process_raw_data(raw_path, processed_path)
-    
-    # Save processed data
+
     logger.info("Saving processed data...")
     with open(processed_path / "train.json", "w") as f:
         json.dump(train_data, f, indent=2)
