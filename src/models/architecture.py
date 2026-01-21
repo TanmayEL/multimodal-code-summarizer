@@ -1,12 +1,3 @@
-"""
-Base model architecture for multimodal code review summarization
-
-This is where i ll define the main model class that combines:
-- Vision Transformer for diff images
-- CodeBERT for code text
-- Fusion layer to combine themodalities
-"""
-
 import torch
 import torch.nn as nn
 from typing import Dict, Optional, Tuple

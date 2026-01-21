@@ -19,7 +19,6 @@ class CrossModalAttention(nn.Module):
         self.num_heads = num_heads
         self.head_dim = embed_dim // num_heads
         
-        # Linear layers for Q, K, V
         self.q_proj = nn.Linear(embed_dim, embed_dim)
         self.k_proj = nn.Linear(embed_dim, embed_dim)
         self.v_proj = nn.Linear(embed_dim, embed_dim)
@@ -39,12 +38,10 @@ class CrossModalAttention(nn.Module):
         batch_size, seq_len_q, embed_dim = query.size()
         seq_len_k = key.size(1)
         
-        # Project to Q, K, V
         q = self.q_proj(query)  # [B, seq_len_q, embed_dim]
         k = self.k_proj(key)    # [B, seq_len_k, embed_dim]
         v = self.v_proj(value)  # [B, seq_len_v, embed_dim]
         
-        # Reshape for mukti head
         q = q.reshape(batch_size, seq_len_q, self.num_heads, self.head_dim)
         k = k.reshape(batch_size, seq_len_k, self.num_heads, self.head_dim)
         v = v.reshape(batch_size, seq_len_k, self.num_heads, self.head_dim)
@@ -53,7 +50,6 @@ class CrossModalAttention(nn.Module):
         k = k.transpose(1, 2)   # [B, num_heads, seq_len_k, head_dim]
         v = v.transpose(1, 2)   # [B, num_heads, seq_len_k, head_dim]
         
-        # Compute attention scores
         scores = torch.matmul(q, k.transpose(-2, -1)) / (self.head_dim ** 0.5)
         attn = F.softmax(scores, dim=-1)
         attn = self.dropout(attn)
@@ -84,7 +80,6 @@ class MultimodalFusionLayer(nn.Module):
         self.norm1 = nn.LayerNorm(embed_dim)
         self.norm2 = nn.LayerNorm(embed_dim)
         
-        # Feed-forward networks
         self.ffn1 = nn.Sequential(
             nn.Linear(embed_dim, embed_dim * 4),
             nn.GELU(),

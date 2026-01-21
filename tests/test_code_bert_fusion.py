@@ -1,7 +1,3 @@
-"""
-Tests for CodeBERT and fusion components
-"""
-
 import pytest
 import torch
 
@@ -15,8 +11,7 @@ def test_token_embedding():
 
     token_ids = torch.randint(0, 1000, (2, 100))
     segment_ids = torch.randint(0, 2, (2, 100))
-    
-    # Forward pass
+
     output = embed(token_ids, segment_ids)
     
     assert output.shape == (2, 100, 768)
@@ -80,8 +75,7 @@ def test_fusion_gradients():
     img_features = torch.randn(1, 768, requires_grad=True)
     diff_features = torch.randn(1, 768, requires_grad=True)
     context_features = torch.randn(1, 768, requires_grad=True)
-    
-    # Forward pass
+
     output = fusion(img_features, diff_features, context_features)
 
     loss = output.sum()

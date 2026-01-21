@@ -8,7 +8,6 @@ from src.config import config
 def test_code_processor():
     processor = CodeProcessor()
     
-    # Test diff processing
     diff_text = """diff --git a/file.py b/file.py
 index 1234567..89abcdef 100644
 --- a/file.py
@@ -30,7 +29,7 @@ index 1234567..89abcdef 100644
 def test_diff_image_processor():
     processor = DiffImageProcessor()
     
-    # Test image generation
+    #test image generation
     diff_text = """+def add(a, b):
 +    return a + b
 -def add(x, y):
@@ -44,7 +43,6 @@ def test_diff_image_processor():
 def test_context_processor():
     processor = ContextProcessor()
     
-    # Test context processing
     title = "Add new feature"
     description = "This PR adds a new feature"
     comments = ["LGTM!", "Please fix tests"]

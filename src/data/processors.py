@@ -25,21 +25,13 @@ class CodeProcessor:
         self.max_len = max_len
     
     def process_diff(self, diff_txt) -> str:
-        """
-        Cleans up the diff text by removing git metadata and stuff
-        
-        Args:
-            diff_txt: the raw diff from git
-            
-        Returns:
-            clean diff text without the git header junk
-        """
+        #cleans up the diff text by removing git metadata and stuff
 
         lines = diff_txt.split("\n")
         clean_lines = []
         
         for line in lines:
-            # skip git metadata
+            #skip git metadata
             if line.startswith("diff --git") or line.startswith("index"):
                 continue
             if line.startswith("+++") or line.startswith("---"):
@@ -51,12 +43,6 @@ class CodeProcessor:
     def tokenize_code(self, code) -> List[str]:
         """
         basic tokenization - just splits on whitespace for now might need something better later but this works ok
-        
-        Args:
-            code: the code to tokenize
-            
-        Returns:
-            list of tokens (just words basically)
         """
         tokens = code.split()
         return tokens[:self.max_len]  # truncate if too long
@@ -74,7 +60,7 @@ class DiffImageProcessor:
     ):
         self.img_size = img_size
         
-        # colors for different parts of the diff
+        #colors for different parts of the diff
         self.colors = colors or {
             "+": (0, 255, 0),  # green = added stuff
             "-": (255, 0, 0),  # red = deleted stuff
@@ -83,19 +69,9 @@ class DiffImageProcessor:
         }
     
     def diff_to_image(self, diff_txt: str) -> np.ndarray:
-        """
-        Takes a diff and makes it into an image
-
-        Args:
-            diff_txt: the diff to convert
-            
-        Returns:
-            numpy array with the image (RGB format)
-        """
         lines = diff_txt.split("\n")
         h, w = self.img_size
         
-        # make a white background
         img = np.ones((h, w, 3), dtype=np.uint8) * 255
         
         num_lines = min(len(lines), h)  #dont go over image height
@@ -122,7 +98,6 @@ class DiffImageProcessor:
                 thickness=-1  # -1 means fill
             )
             
-            #add the actual code text
             visible_text = line[:w//10]  #show what fits
             cv2.putText(
                 img,
@@ -147,21 +122,10 @@ class ContextProcessor:
     """
     
     def __init__(self, max_len: int = config.data.max_context_length):
-        # max number of words to keep (to avoid super long inputs)
+        #max number of words to keep (to avoid super long inputs)
         self.max_len = max_len
     
     def process_context(self, title: str, description: str, comments: List[str]) -> str:
-        """
-        Combines PR info into one big text just concatenates everything with some markers so the model knows whats what
-        
-        Args:
-            title: the PR title
-            desc: PR description (usually longer than title)
-            comments: list of comment texts
-            
-        Returns:
-            one big string with all the context
-        """
         context = f"Title: {title}\nDescription: {description}"
         
         if comments:
